@@ -16,6 +16,9 @@ def test(model,speakers, buffer):
 
 def train(number_classes):
     model = ml.make_model(number_classes)
+    batch = data.wave_batch_generator(batch_size=1000,
+                                      target=data.Target.speaker)
+    X, Y = next(batch)
     model.fit(X, Y, n_epoch=100, show_metric=True, snapshot_step=100)
     model.save('classifier')
 

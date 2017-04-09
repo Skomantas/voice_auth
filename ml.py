@@ -2,14 +2,8 @@
 
 import tflearn
 
-import speech_data as data
-
 
 def make_model(number_classes):
-    batch = data.wave_batch_generator(batch_size=1000,
-                                      target=data.Target.speaker)
-    X, Y = next(batch)
-
     # Classification
     tflearn.init_graph(num_cores=8, gpu_memory_fraction=0.5)
 
