@@ -1,5 +1,7 @@
 '''Machine learning utils.'''
 
+import speech_data as data
+
 import tflearn
 
 
@@ -23,3 +25,11 @@ def make_model(number_classes):
                              loss='categorical_crossentropy')
     model = tflearn.DNN(net)
     return model
+
+
+def predict(model, speakers, buffer):
+    demo = data.wave_mfcc(buffer)
+    result = model.predict([demo])
+    conf = numpy.amax(result)*100
+    result = data.one_hot_to_item(result, speakers)
+    return result, conf
