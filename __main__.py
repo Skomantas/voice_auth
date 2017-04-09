@@ -45,8 +45,6 @@ def train(number_classes):
     model = make_model(number_classes)
     model.fit(X, Y, n_epoch=100, show_metric=True, snapshot_step=100)
     model.save('classifier')
-    # with open('classifier.pkl', 'w') as f:
-    #   pickle.dump(model,f)
 
 
 def main():
