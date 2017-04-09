@@ -7,39 +7,39 @@ import numpy
 import pickle
 import audio
 
+
 def test(model,speakers, buffer):
-  demo=data.wave_mfcc(buffer)
-  result=model.predict([demo])
-  conf = numpy.amax(result)*100
-  result=data.one_hot_to_item(result,speakers)
-  print("predicted : result = %s  confidence = %.2f"%(result,conf))
+    demo=data.wave_mfcc(buffer)
+    result=model.predict([demo])
+    conf = numpy.amax(result)*100
+    result=data.one_hot_to_item(result,speakers)
+    print("predicted : result = %s  confidence = %.2f"%(result,conf))
+
 
 def make_model(number_classes):
+    batch=data.wave_batch_generator(batch_size=1000, target=data.Target.speaker)
+    X,Y=next(batch)
 
-  batch=data.wave_batch_generator(batch_size=1000, target=data.Target.speaker)
-  X,Y=next(batch)
+    # Classification
+    tflearn.init_graph(num_cores=8, gpu_memory_fraction=0.5)
 
+    net = tflearn.input_data(shape=[None, 3848]) #Two wave chunks
 
-  # Classification
-  tflearn.init_graph(num_cores=8, gpu_memory_fraction=0.5)
+    net = tflearn.fully_connected(net, 128)
+    net = tflearn.dropout(net, 0.5)
 
+    net = tflearn.fully_connected(net, 16)
+    net = tflearn.dropout(net, 0.8)
 
-  net = tflearn.input_data(shape=[None, 3848]) #Two wave chunks
+    net = tflearn.fully_connected(net, 128)
+    net = tflearn.dropout(net, 0.5)
 
-  net = tflearn.fully_connected(net, 128)
-  net = tflearn.dropout(net, 0.5)
+    net = tflearn.fully_connected(net, number_classes, activation='softmax')
+    net = tflearn.regression(net, optimizer='adam', loss='categorical_crossentropy')
+    model = tflearn.DNN(net)
 
-  net = tflearn.fully_connected(net, 16)
-  net = tflearn.dropout(net, 0.8)
+    return model
 
-  net = tflearn.fully_connected(net, 128)
-  net = tflearn.dropout(net, 0.5)
-
-  net = tflearn.fully_connected(net, number_classes, activation='softmax')
-  net = tflearn.regression(net, optimizer='adam', loss='categorical_crossentropy')
-  model = tflearn.DNN(net)
-
-  return model
 
 def train(number_classes):
     model = make_model(number_classes)
@@ -47,6 +47,7 @@ def train(number_classes):
     model.save('classifier')
     # with open('classifier.pkl', 'w') as f:
     #   pickle.dump(model,f)
+
 
 def main():
     speakers = data.get_speakers()
