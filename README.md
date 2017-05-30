@@ -1,6 +1,10 @@
 # voice_auth
 
 ### Start program by running __main__.py file
+```bash
+make pyenv
+pyenv/bin/python __main__.py
+```
 
 ### To train and save model uncomment these lines
 ```python
