@@ -32,8 +32,8 @@ except:
 # TRAIN_INDEX='train_words_index.txt'
 # TEST_INDEX='test_words_index.txt'
 DATA_DIR = 'data/'
-pcm_path = "data/amazing_test2/" # 8 bit
-mano_path = "data/amazing_test2/"
+pcm_path = "data/amazing_test3/" # 8 bit
+mano_path = "data/amazing_test3/"
 path = pcm_path
 CHUNK = 1924
 test_fraction=0.1 # 10% of data for test / verification
@@ -162,7 +162,7 @@ def speaker(filename):  # vom Dateinamen
 def get_speakers(path=mano_path):
   # maybe_download(Source.DIGIT_SPECTROS)
   # maybe_download(Source.DIGIT_WAVES)
-  files = os.listdir("data/amazing_test2")
+  files = os.listdir("data/amazing_test3")
   def nobad(name):
     return "_" in name and not "." in name.split("_")[1]
   speakers=list(set(map(speaker,files)))
@@ -212,7 +212,7 @@ def wave_batch_generator(batch_size=10,target=Target.speaker): #speaker
   labels = []
   # input_width=CHUNK*6 # wow, big!!
   # files = os.listdir(path)
-  files = os.listdir("data/amazing_test2/")
+  files = os.listdir("data/amazing_test3/")
   while True:
     shuffle(files)
     print("loaded batch of %d files" % len(files))
@@ -235,7 +235,7 @@ def wave_batch_generator(batch_size=10,target=Target.speaker): #speaker
       # chunk.extend())
       # numpy.append(chunk, numpy.zeros(CHUNK * 2 - len(data0)))
 
-      chunk = load_wav_file("data/amazing_test2/" + wav)
+      chunk = load_wav_file("data/amazing_test3/" + wav)
 
       batch_waves.append(chunk)
       # batch_waves.append(chunks[input_width])

@@ -2,6 +2,7 @@ import struct
 
 import pyaudio
 import wave
+import sys
 
 
 class Stream:
@@ -16,7 +17,7 @@ class Stream:
 
     def record(self, seconds):
         stream = self._p.open(format=self._format, channels=self._channels,
-                              rate=self._rate, input=True,
+                              rate=self._rate, input=True, output=False,
                               frames_per_buffer=1024)
         audio_stream = b''
         for i in range(0, int(self._rate / 1024 * seconds)):

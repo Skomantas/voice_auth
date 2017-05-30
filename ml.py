@@ -1,7 +1,7 @@
 '''Machine learning utils.'''
 
 import speech_data as data
-
+import numpy
 import tflearn
 
 
@@ -14,8 +14,8 @@ def make_model(number_classes):
     net = tflearn.fully_connected(net, 128)
     net = tflearn.dropout(net, 0.5)
 
-    net = tflearn.fully_connected(net, 16)
-    net = tflearn.dropout(net, 0.8)
+    net = tflearn.fully_connected(net, 32)
+    net = tflearn.dropout(net, 0.5)
 
     net = tflearn.fully_connected(net, 128)
     net = tflearn.dropout(net, 0.5)

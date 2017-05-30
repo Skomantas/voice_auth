@@ -3,8 +3,9 @@ import speech_data as data
 import ml
 
 from flask import Flask
+from flask_cors import CORS, cross_origin
 app = Flask(__name__)
-
+CORS(app)
 
 speakers = data.get_speakers()
 model = ml.make_model(len(speakers))

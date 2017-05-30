@@ -1,7 +1,6 @@
-
 import speech_data as data
 import numpy
-
+import os
 import audio
 import ml
 
@@ -19,7 +18,8 @@ def main():
     speakers = data.get_speakers()
     number_classes=len(speakers)
     print("speakers",speakers)
-
+    # train(number_classes)
+    # return
     model = ml.make_model(number_classes)
     model.load('classifier')
 
@@ -30,6 +30,12 @@ def main():
         sample = audio.stream_to_ints(buff)
         label, conf = ml.predict(model, speakers, sample)
         print("predicted : result = %s  confidence = %.2f" % (label, conf))
+    # for filename in os.listdir('./data/test'):
+    #     buff = stream.read_from('./data/test/' + filename)
+    #     sample = audio.stream_to_ints(buff)
+    #     label, conf = ml.predict(model, speakers, sample)
+
+    #     print("name: = %s predicted : result = %s  confidence = %.2f" % (filename.split("_")[1], label, conf))
     # gfx.plot_vector(stream_to_ints(buff))
 
 
