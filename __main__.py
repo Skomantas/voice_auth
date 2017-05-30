@@ -25,7 +25,7 @@ def main():
 
     stream = audio.Stream()
     while True:
-        raw_input('press enter to record!!!')
+        input('press enter to record!!!')
         buff = stream.record(1.5)
         sample = audio.stream_to_ints(buff)
         label, conf = ml.predict(model, speakers, sample)
