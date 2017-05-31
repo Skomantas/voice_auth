@@ -4,6 +4,7 @@ import os
 import audio
 import ml
 
+import pyaudio
 
 def train(number_classes):
     model = ml.make_model(number_classes)

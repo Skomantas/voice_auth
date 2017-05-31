@@ -1,7 +1,3 @@
-#!/usr/local/bin/python
-"""Utilities for downloading and providing data from openslr.org, libriSpeech, Pannous, Gutenberg, WMT, tokenizing, vocabularies."""
-# TODO! see https://github.com/pannous/caffe-speech-recognition for some data sources
-
 import os
 import re
 import sys
@@ -29,16 +25,14 @@ try:
 except:
   pass # fuck 2to3
 
-# TRAIN_INDEX='train_words_index.txt'
-# TEST_INDEX='test_words_index.txt'
+
 DATA_DIR = 'data/'
-pcm_path = "data/amazing_test3/" # 8 bit
-mano_path = "data/amazing_test3/"
+pcm_path = "data/amazing_test2/" # 8 bit
+mano_path = "data/amazing_test2/"
 path = pcm_path
 CHUNK = 1924
 test_fraction=0.1 # 10% of data for test / verification
 
-# http://pannous.net/files/spoken_numbers_pcm.tar
 class Source:  # labels
   DIGIT_WAVES = 'spoken_numbers_pcm.tar'
   DIGIT_SPECTROS = 'spoken_numbers_spectros_64x64.tar'  # 64x64  baby data set, works astonishingly well
@@ -60,17 +54,10 @@ class Target(Enum):  # labels
   sentiment=7
   first_letter=8
   hotword = 9
-  # test_word=9 # use 5 even for speaker etc
 
 
 num_characters = 32
-# num_characters=60 #  only one case, Including numbers
-# num_characters=128 #
-# num_characters=256 #  including special characters
-# offset=0  # 1:1 mapping ++
-# offset=32 # starting with ' ' space
-# offset=48 # starting with  numbers
-offset = 64  # starting with characters
+
 max_word_length = 20
 terminal_symbol = 0
 
@@ -99,9 +86,6 @@ class SparseLabels:
   def shape(self):
     return (len(self.indices),len(self.values))
 
-# labels: An `int32` `SparseTensor`.
-# labels.indices[i, :] == [b, t] means `labels.values[i]` stores the id for (batch b, time t).
-# labels.values[i]` must take on values in `[0, num_labels)`.
 def sparse_labels(vec):
   labels = SparseLabels()
   b=0
@@ -129,26 +113,6 @@ def progresshook(blocknum, blocksize, totalsize):
     else: # total size is unknown
         sys.stderr.write("read %d\n" % (readsofar,))
 
-def maybe_download(file, work_directory=DATA_DIR):
-  """Download the data from Pannous's website, unless it's already here."""
-  print("Looking for data %s in %s"%(file,work_directory))
-  if not os.path.exists(work_directory):
-    os.mkdir(work_directory)
-  filepath = os.path.join(work_directory, re.sub('.*\/','',file))
-  if not os.path.exists(filepath):
-    if not file.startswith("http"): url_filename = SOURCE_URL + file
-    else: url_filename=file
-    print('Downloading from %s to %s' % (url_filename, filepath))
-    filepath, _ = urllib.request.urlretrieve(url_filename, filepath,progresshook)
-    statinfo = os.stat(filepath)
-    print('Successfully downloaded', file, statinfo.st_size, 'bytes.')
-    # os.system('ln -s '+work_directory)
-  if os.path.exists(filepath):
-    print('Extracting %s to %s' % ( filepath, work_directory))
-    os.system('tar xf '+filepath+" -C "+work_directory)
-    print('Data ready!')
-  return filepath.replace(".tar","")
-
 def spectro_batch(batch_size=10):
   return spectro_batch_generator(batch_size)
 
@@ -162,7 +126,7 @@ def speaker(filename):  # vom Dateinamen
 def get_speakers(path=mano_path):
   # maybe_download(Source.DIGIT_SPECTROS)
   # maybe_download(Source.DIGIT_WAVES)
-  files = os.listdir("data/amazing_test3")
+  files = os.listdir("data/amazing_test2")
   def nobad(name):
     return "_" in name and not "." in name.split("_")[1]
   speakers=list(set(map(speaker,files)))
@@ -179,21 +143,6 @@ def load_wav_file(name):
   # f = wave.open(name, "rb")
 
   (rate,sig) = wav_go.read(name)
-  # print("loading %s"%name)
-  # chunk = []
-  # data0 = f.readframes(CHUNK)
-  # while data0:  # f.getnframes()
-  #   # data=numpy.fromstring(data0, dtype='float32')
-  #   # data = numpy.fromstring(data0, dtype='uint16')
-  #   data = numpy.fromstring(data0, dtype='uint8')
-  #   data = (data + 128) / 255.  # 0-1 for Better convergence
-  #   # chunks.append(data)
-  #   chunk.extend(data)
-  #   data0 = f.readframes(CHUNK)
-  # # finally trim:
-  # chunk = chunk[0:CHUNK * 2]  # should be enough for now -> cut
-  # chunk.extend(numpy.zeros(CHUNK * 2 - len(chunk)))  # fill with padding 0's
-  # print("%s loaded"%name)
 
   mfcc_feat = mfcc(sig,rate)
   # fbank_feat = logfbank(sig,rate)
@@ -212,7 +161,7 @@ def wave_batch_generator(batch_size=10,target=Target.speaker): #speaker
   labels = []
   # input_width=CHUNK*6 # wow, big!!
   # files = os.listdir(path)
-  files = os.listdir("data/amazing_test3/")
+  files = os.listdir("data/amazing_test2/")
   while True:
     shuffle(files)
     print("loaded batch of %d files" % len(files))
@@ -222,20 +171,8 @@ def wave_batch_generator(batch_size=10,target=Target.speaker): #speaker
       elif target==Target.speaker: labels.append(one_hot_from_item(speaker(wav), speakers))
       elif target==Target.first_letter:  label=dense_to_one_hot((ord(wav[0]) - 48) % 32,32)
       else: raise Exception("todo : Target.word label!")
-      # (rate,sig) = wav_go.read("data/amazing_test/" + wav)
-      # mfcc_feat = mfcc(sig,rate)
-      # data0 = mfcc_feat.flatten()
-      # chunk = data0
 
-      # # data=numpy.fromstring(data0, dtype='float32')
-      # # data = numpy.fromstring(data0, dtype='uint16')
-      # data = numpy.fromstring(data0, dtype='uint8')
-      # data = (data + 128) / 255.  # 0-1 for Better convergence
-      # chunk.extend(data)
-      # chunk.extend())
-      # numpy.append(chunk, numpy.zeros(CHUNK * 2 - len(data0)))
-
-      chunk = load_wav_file("data/amazing_test3/" + wav)
+      chunk = load_wav_file("data/amazing_test2/" + wav)
 
       batch_waves.append(chunk)
       # batch_waves.append(chunks[input_width])
@@ -421,18 +358,7 @@ def read_data_sets(train_dir,source_data=Source.NUMBER_IMAGES, fake_data=False, 
   train_labels = extract_labels(TRAIN_INDEX,train=True, one_hot=one_hot)
   test_images = extract_images(TEST_INDEX,train=False)
   test_labels = extract_labels(TEST_INDEX,train=False, one_hot=one_hot)
-  # train_images = train_images[:VALIDATION_SIZE]
-  # train_labels = train_labels[:VALIDATION_SIZE:]
-  # test_images = test_images[VALIDATION_SIZE:]
-  # test_labels = test_labels[VALIDATION_SIZE:]
   data_sets.train = DataSet(train_images, train_labels , load=False)
   data_sets.test = DataSet(test_images, test_labels, load=True)
   # data_sets.validation = DataSet(validation_images, validation_labels, load=True)
   return data_sets
-
-if __name__ == "__main__":
-  print("downloading speech datasets")
-  maybe_download( Source.DIGIT_SPECTROS)
-  maybe_download( Source.DIGIT_WAVES)
-  maybe_download( Source.NUMBER_IMAGES)
-  maybe_download( Source.NUMBER_WAVES)
